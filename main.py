@@ -1,6 +1,6 @@
 import read_csv as reader
 from data_preparation import DataPreparation
-from models import DTC
+from models import DTC, MissingDataTrainDTC, MissingDataPredictionDTC
 
 
 def iterate_files(impute=True):
@@ -31,49 +31,64 @@ def prepare_data(dp, impute):
     dp.partition_data_sets()
 
 
-def train_model(class_model, x_train, x_test, y_train, y_test):
-    raise NotImplemented
-    class_model.model.fit()
-    class_model.model.predict()
+def train_model(class_model, x_train, y_train):
+    class_model.model.fit(x_train, y_train)
 
 
-def run_complete_model():  # gonen working on this
-    raise NotImplemented
+def run_complete_model():
     prepared_data = iterate_files(impute=True)
 
     dtc = DTC()  # 'normal' DecisionTreeClassifier
-    train_model(dtc, prepared_data.x_train, prepared_data.x_test, prepared_data.y_train, prepared_data.y_test)
+    train_model(dtc, prepared_data.x_train, prepared_data.y_train)
+    y_prediction = dtc.model.predict(prepared_data.x_test)
+    return y_prediction, prepared_data.y_test  # return both for evaluation
 
 
-def run_missing_values_in_prediction_model():
+def run_missing_values_in_prediction_model():  # gonen working on this
+
+    # TODO:
+    # make sure that after data is prepared (prepared_data instance)
+    # we need to omit values in y_test, x_test.
+    # then, override predict() method -> and predict
+
     raise NotImplemented
+    class_model = MissingDataPredictionDTC()
     prepared_data = iterate_files(impute=True)
-    train_model(model, prepared_data.x_train, prepared_data.x_test, prepared_data.y_train, prepared_data.y_test)
+    train_model(class_model.model, prepared_data.x_train, prepared_data.y_train)
+    y_prediction = class_model.model.predict(prepared_data.x_test)
+    return y_prediction, prepared_data.y_test  # return both for evaluation
+
 
 
 def run_missing_values_in_training_model():  # guy working on this
-    raise NotImplemented
+
+    # TODO:
+    # make sure that after data is prepared (prepared_data instance)
+    # we need to complete values in y_test, x_test.
+    # then, override fit() method -> and train
+
+    class_model = MissingDataTrainDTC()
     prepared_data = iterate_files(impute=False)
+    test_dp = DataPreparation()
 
     # process y_test
-    y_dp = DataPreparation()
-    y_dp.df = prepared_data.y_test.to_frame()
-    y_dp.fill_na()
-    y_dp.discretization()
-    complete_y_test = y_dp.df.copy()
+    test_dp.df = prepared_data.y_test.to_frame()
+    test_dp.fill_na()
+    test_dp.discretization()
+    complete_y_test = test_dp.df.copy()
 
-    # process y_train
-    y_dp.df = prepared_data.y_train.to_frame()
-    y_dp.fill_na()
-    y_dp.discretization()
-    complete_y_train = y_dp.df.copy()
+    # process x_test
+    test_dp.df = prepared_data.x_test()
+    test_dp.fill_na()
+    test_dp.discretization()
+    complete_x_test = test_dp.df.copy()
 
-
-    complete_y_train = y_dp.y_test
-    train_model(model, prepared_data.x_train, prepared_data.x_test, complete_y_train, complete_y_test)
+    train_model(class_model.model, prepared_data.x_train, prepared_data.y_train)
+    y_prediction = class_model.model.predict(complete_x_test)
+    return y_prediction, complete_y_test  # return both for evaluation
 
 
 if __name__ == '__main__':
-    # run_complete_model()
-    # run_missing_values_in_prediction_model()
-    run_missing_values_in_training_model()
+    # y_prediction_complete_model, y_test_complete_model = run_complete_model()
+    # y_prediction_missing_predicion_values_model, y_test_missing_prediction_values_model = run_missing_values_in_prediction_model()
+    y_prediction_missing_train_values_model, y_test_missing_train_values_model = run_missing_values_in_training_model()
