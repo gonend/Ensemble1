@@ -39,19 +39,19 @@ def train_model(class_model, x_train, x_test, y_train, y_test):
 
 def run_complete_model():  # gonen working on this
     raise NotImplemented
-    preparedData = iterate_files(impute=True)
+    prepared_data = iterate_files(impute=True)
 
     dtc = DTC()  # 'normal' DecisionTreeClassifier
-    train_model(dtc, preparedData.x_train, preparedData.x_test, preparedData.y_train, preparedData.y_test)
+    train_model(dtc, prepared_data.x_train, prepared_data.x_test, prepared_data.y_train, prepared_data.y_test)
 
 
-def run_missing_values_in_prediction_model():  # guy working on this
+def run_missing_values_in_prediction_model():
     raise NotImplemented
     prepared_data = iterate_files(impute=True)
     train_model(model, prepared_data.x_train, prepared_data.x_test, prepared_data.y_train, prepared_data.y_test)
 
 
-def run_missing_values_in_training_model():
+def run_missing_values_in_training_model():  # guy working on this
     raise NotImplemented
     prepared_data = iterate_files(impute=False)
 
