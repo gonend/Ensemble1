@@ -1,5 +1,6 @@
 import read_csv as reader
 from data_preparation import DataPreparation
+from models import DTC
 
 
 def iterate_files():
@@ -13,6 +14,7 @@ def iterate_files():
         dp = DataPreparation()
         dp.df = reader.read_file(name)
         prepare_data(dp)
+        return dp
 
 
 def prepare_data(dp):
@@ -27,5 +29,32 @@ def prepare_data(dp):
     dp.partition_data_sets()
 
 
+def train_model(dp, class_model):
+    raise NotImplemented
+    class_model.model.fit()  # dp.x, dp.y, etc...
+
+
+def run_complete_model():  # gonen working on this
+    raise NotImplemented
+
+    preparedData = iterate_files()
+
+    dtc = DTC()  # 'normal' DecisionTreeClassifier
+    train_model(dp, dtc)
+
+
+def run_missing_values_in_prediction_model():  # guy working on this
+    raise NotImplemented
+
+    preparedData = iterate_files()
+    train_model()
+
+
+def run_missing_values_in_training_model():
+    raise NotImplemented
+
+
 if __name__ == '__main__':
-    iterate_files()
+    run_complete_model()
+    run_missing_values_in_prediction_model()
+    run_missing_values_in_training_model()
