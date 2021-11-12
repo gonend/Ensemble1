@@ -18,19 +18,19 @@ class DataPreparation:
         self.x_test = None
         self.y_test = None
 
-    def add_missing_data_10_percent(self):
+    def add_missing_data_10_percent(self, df):
         """
         random NaN values (10%) are inserted to the data set
         :return:
         """
 
         replaced = collections.defaultdict(set)
-        ix = [(row, col) for row in range(self.df.shape[0]) for col in range(self.df.shape[1] - 1)]
+        ix = [(row, col) for row in range(df.shape[0]) for col in range(df.shape[1] - 1)]
         random.shuffle(ix)
         to_replace = int(round(.1 * len(ix)))
         for row, col in ix:
-            if len(replaced[row]) < self.df.shape[1] - 1:
-                self.df.iloc[row, col] = np.nan
+            if len(replaced[row]) < df.shape[1] - 1:
+                df.iloc[row, col] = np.nan
                 to_replace -= 1
                 replaced[row].add(col)
                 if to_replace == 0:
