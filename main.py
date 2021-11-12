@@ -68,8 +68,8 @@ def run_missing_values_in_training_model():  # guy working on this
 
     class_model = MissingDataTrainDTC()
     prepared_data = iterate_files(impute=False)
-    prepared_data.add_missing_data_10_percent(prepared_data.y_train.to_frame())
-    prepared_data.add_missing_data_10_percent(prepared_data.x_train)
+    prepared_data.y_train = prepared_data.add_missing_data_10_percent(prepared_data.y_train.to_frame())
+    prepared_data.x_train = prepared_data.add_missing_data_10_percent(prepared_data.x_train)
 
     train_model(class_model.model, prepared_data.x_train, prepared_data.y_train)
     y_prediction = class_model.model.predict(prepared_data.x_test)
@@ -77,6 +77,6 @@ def run_missing_values_in_training_model():  # guy working on this
 
 
 if __name__ == '__main__':
-    # y_prediction_complete_model, y_test_complete_model = run_complete_model()
+    y_prediction_complete_model, y_test_complete_model = run_complete_model()
     # y_prediction_missing_predicion_values_model, y_test_missing_prediction_values_model = run_missing_values_in_prediction_model()
     y_prediction_missing_train_values_model, y_test_missing_train_values_model = run_missing_values_in_training_model()
