@@ -24,10 +24,9 @@ def prepare_data(dp, impute):
     :param dp:
     :return:
     """
-    dp.add_missing_data_10_percent()
-    if impute:
-        dp.fill_na()
-        dp.discretization()
+    dp.add_missing_data_10_percent(dp.df)
+    dp.fill_na()
+    dp.discretization()
     dp.partition_data_sets()
 
 
@@ -69,23 +68,12 @@ def run_missing_values_in_training_model():  # guy working on this
 
     class_model = MissingDataTrainDTC()
     prepared_data = iterate_files(impute=False)
-    test_dp = DataPreparation()
-
-    # process y_test
-    test_dp.df = prepared_data.y_test.to_frame()
-    test_dp.fill_na()
-    test_dp.discretization()
-    complete_y_test = test_dp.df.copy()
-
-    # process x_test
-    test_dp.df = prepared_data.x_test()
-    test_dp.fill_na()
-    test_dp.discretization()
-    complete_x_test = test_dp.df.copy()
+    prepared_data.add_missing_data_10_percent(prepared_data.y_train.to_frame())
+    prepared_data.add_missing_data_10_percent(prepared_data.x_train)
 
     train_model(class_model.model, prepared_data.x_train, prepared_data.y_train)
-    y_prediction = class_model.model.predict(complete_x_test)
-    return y_prediction, complete_y_test  # return both for evaluation
+    y_prediction = class_model.model.predict(prepared_data.x_test)
+    return y_prediction, prepared_data.y_test  # return both for evaluation
 
 
 if __name__ == '__main__':
