@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
 
 class DataPreparation:
 
@@ -17,6 +17,8 @@ class DataPreparation:
         self.y_train = None
         self.x_test = None
         self.y_test = None
+        self.test_index = []
+        self.train_index = []
 
     def add_missing_data_10_percent(self, df):
         """
@@ -67,5 +69,7 @@ class DataPreparation:
 
         self.y = self.df['class']
         self.x = self.df.drop('class', axis=1)
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.33,
-                                                                                random_state=42)
+        skf = StratifiedKFold(n_splits=5)
+        for train,test in skf.split(X=self.x,y=self.y):
+            self.test_index.append(test)
+            self.train_index.append(train)

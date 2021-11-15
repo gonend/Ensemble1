@@ -3,7 +3,6 @@ from data_preparation import DataPreparation
 from models import DTC, MissingDataTrainDTC, MissingDataPredictionDTC
 from sklearn.metrics import roc_auc_score
 
-
 def iterate_files(impute=True):
     """
     for each csv file - read, prepare, fit and predict data.
@@ -45,9 +44,14 @@ def run_complete_model():
     scores = []
 
     for name, prepared_data in total_data.items():
-        train_model(dtc, prepared_data.x_train, prepared_data.y_train)
-        y_prediction = dtc.predict(prepared_data.x_test)
-        scores.append([name, evaluate(y_prediction, prepared_data.y_test)])  # return both for evaluation
+        counter = 0
+        for i in range(len(prepared_data.train_index)):
+            pd_train_inx = prepared_data.train_index.__getitem__(i)
+            pd_test_inx = prepared_data.test_index.__getitem__(i)
+            train_model(dtc, prepared_data.x[~prepared_data.x.index.isin(pd_train_inx)], prepared_data.y[~prepared_data.x.index.isin(pd_train_inx)])
+            y_prediction = dtc.predict(prepared_data.x[~prepared_data.x.index.isin(pd_test_inx)])
+            counter += evaluate(y_prediction, prepared_data.y[~prepared_data.y.index.isin(pd_test_inx)])
+        scores.append([name,counter/len(prepared_data.train_index)])  # return both for evaluation
     return scores
 
 
