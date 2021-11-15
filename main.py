@@ -58,12 +58,18 @@ def run_missing_values_in_prediction_model():
     # we need to omit values in y_test, x_test.
     # then, override predict() method -> and predict
 
-    raise NotImplemented
+    # raise NotImplemented
     class_model = MissingDataPredictionDTC()
-    prepared_data = iterate_files(impute=True)
-    train_model(class_model, prepared_data.x_train, prepared_data.y_train)
-    y_prediction = class_model.predict(prepared_data.x_test)
-    return y_prediction, prepared_data.y_test  # return both for evaluation
+    total_data = iterate_files(impute=True)
+    scores = []
+
+    for name, prepared_data in total_data.items():
+        prepared_data.x_test = prepared_data.add_missing_data_10_percent(prepared_data.x_test)
+        train_model(class_model, prepared_data.x_train, prepared_data.y_train)
+        y_prediction = class_model.predict(prepared_data.x_test)
+        scores.append([name,evaluate(y_prediction,prepared_data.y_test)])
+    return scores
+    #y_prediction, prepared_data.y_test  # return both for evaluation
 
 
 def run_missing_values_in_training_model():  # guy working on this
@@ -97,7 +103,9 @@ if __name__ == '__main__':
     complete_model_scores = run_complete_model()
     # y_prediction_missing_predicion_values_model, y_test_missing_prediction_values_model = run_missing_values_in_prediction_model()
     missing_train_values_model_scores = run_missing_values_in_training_model()
+    missing_test_values_model_scores = run_missing_values_in_prediction_model()
 
     print('')
     print(f'Complete model AUROC: {complete_model_scores}\n')
     print(f'Missing values during train model AUROC: {missing_train_values_model_scores}')
+    print(f'Missing values during test model AUROC: {missing_test_values_model_scores}')
