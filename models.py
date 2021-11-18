@@ -5,9 +5,8 @@ from sklearn.pipeline import Pipeline
 
 class DTC:
 
-    def __init__(self):
-
-        self.model = DecisionTreeClassifier(random_state=0)
+    def __init__(self, max_depth=None, min_samples_split=2):
+        self.model = DecisionTreeClassifier(random_state=0, max_depth=max_depth, min_samples_split=min_samples_split)
 
     def fit(self, x_train, y_train):
         self.model.fit(x_train, y_train)
@@ -16,34 +15,17 @@ class DTC:
         return self.model.predict(x_test)
 
 
-class MissingDataTrainDTC:
+class MissingDataTrainDTC(DTC):
 
     def __init__(self):
-
-        self.model = None  # override .fit function
-
-    def fit(self, x_train, y_train):
-        earth_classifier = Pipeline([('earth', Earth(allow_missing=True)),
-                                     ('cls', DecisionTreeClassifier())])
-
-        earth_classifier.fit(x_train, y_train)
-        self.model = earth_classifier
-
-    def predict(self, x_test):
-        return self.model.predict(x_test)
+        super().__init__()
+        self.model = Pipeline([('earth', Earth(allow_missing=True)),
+                               ('cls', DecisionTreeClassifier())])
 
 
-class MissingDataPredictionDTC:
+class MissingDataPredictionDTC(DTC):
 
     def __init__(self):
-        self.model = DecisionTreeClassifier(random_state=0)  # override .predict function
-
-    def fit(self, x_train, y_train):
-        earth_classifier = Pipeline([('earth', Earth(allow_missing=True)),
-                                     ('cls', DecisionTreeClassifier())])
-
-        earth_classifier.fit(x_train, y_train)
-        self.model = earth_classifier
-
-    def predict(self, x_test):
-        return self.model.predict(x_test)
+        super().__init__()
+        self.model = Pipeline([('earth', Earth(allow_missing=True)),
+                               ('cls', DecisionTreeClassifier())])

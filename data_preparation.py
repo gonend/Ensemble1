@@ -4,7 +4,8 @@ import pandas as pd
 import random
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
+
 
 class DataPreparation:
 
@@ -17,6 +18,8 @@ class DataPreparation:
         self.y_train = None
         self.x_test = None
         self.y_test = None
+        self.test_index = []
+        self.train_index = []
 
     def add_missing_data_10_percent(self, df):
         """
