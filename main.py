@@ -51,7 +51,7 @@ def run_complete_model():
             train_model(dtc, prepared_data.x[~prepared_data.x.index.isin(pd_train_inx)], prepared_data.y[~prepared_data.x.index.isin(pd_train_inx)])
             y_prediction = dtc.predict(prepared_data.x[~prepared_data.x.index.isin(pd_test_inx)])
             counter += evaluate(y_prediction, prepared_data.y[~prepared_data.y.index.isin(pd_test_inx)])
-        scores.append([name,counter/len(prepared_data.train_index)])  # return both for evaluation
+        scores.append([name,counter/len(prepared_data.train_index)])  # return avg score for evaluation
     return scores
 
 
@@ -68,9 +68,14 @@ def run_missing_values_in_prediction_model():
     scores = []
 
     for name, prepared_data in total_data.items():
-        prepared_data.x_test = prepared_data.add_missing_data_10_percent(prepared_data.x_test)
-        train_model(class_model, prepared_data.x_train, prepared_data.y_train)
-        y_prediction = class_model.predict(prepared_data.x_test)
+        counter = 0
+        for i in range(len(prepared_data.train_index)):
+
+            pd_train_inx = prepared_data.train_index.__getitem__(i)
+            pd_test_inx = prepared_data.test_index.__getitem__(i)
+            prepared_data.x_test = prepared_data.add_missing_data_10_percent(prepared_data.x_test)
+            train_model(class_model, prepared_data.x_train, prepared_data.y_train)
+            y_prediction = class_model.predict(prepared_data.x_test)
         scores.append([name,evaluate(y_prediction,prepared_data.y_test)])
     return scores
     #y_prediction, prepared_data.y_test  # return both for evaluation
@@ -104,12 +109,12 @@ def evaluate(y_test, y_pred):
 
 
 if __name__ == '__main__':
-    complete_model_scores = run_complete_model()
+    #complete_model_scores = run_complete_model()
     # y_prediction_missing_predicion_values_model, y_test_missing_prediction_values_model = run_missing_values_in_prediction_model()
-    missing_train_values_model_scores = run_missing_values_in_training_model()
+    #missing_train_values_model_scores = run_missing_values_in_training_model()
     missing_test_values_model_scores = run_missing_values_in_prediction_model()
 
     print('')
-    print(f'Complete model AUROC: {complete_model_scores}\n')
-    print(f'Missing values during train model AUROC: {missing_train_values_model_scores}')
+    #print(f'Complete model AUROC: {complete_model_scores}\n')
+    #print(f'Missing values during train model AUROC: {missing_train_values_model_scores}')
     print(f'Missing values during test model AUROC: {missing_test_values_model_scores}')
