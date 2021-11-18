@@ -1,4 +1,3 @@
-from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from pyearth import Earth
 from sklearn.pipeline import Pipeline
@@ -15,6 +14,7 @@ class DTC:
 
     def predict(self, x_test):
         return self.model.predict(x_test)
+
 
 class MissingDataTrainDTC:
 

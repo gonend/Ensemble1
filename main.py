@@ -47,7 +47,7 @@ def run_complete_model():
     for name, prepared_data in total_data.items():
         train_model(dtc, prepared_data.x_train, prepared_data.y_train)
         y_prediction = dtc.predict(prepared_data.x_test)
-        scores.append([name, evaluate(y_prediction, prepared_data.y_test)])  # return both for evaluation
+        scores.append([name, evaluate(y_prediction, prepared_data.y_test)])
     return scores
 
 
@@ -55,7 +55,7 @@ def run_missing_values_in_prediction_model():
 
     # TODO: gonen working on this
     # make sure that after data is prepared (prepared_data instance)
-    # we need to omit values in y_test, x_test.
+    # we need to omit values in x_test.
     # then, override predict() method -> and predict
 
     raise NotImplemented
@@ -63,7 +63,7 @@ def run_missing_values_in_prediction_model():
     prepared_data = iterate_files(impute=True)
     train_model(class_model, prepared_data.x_train, prepared_data.y_train)
     y_prediction = class_model.predict(prepared_data.x_test)
-    return y_prediction, prepared_data.y_test  # return both for evaluation
+    return y_prediction, prepared_data.y_test
 
 
 def run_missing_values_in_training_model():  # guy working on this
