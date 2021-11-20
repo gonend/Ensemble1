@@ -6,6 +6,7 @@ from data_preparation import DataPreparation
 from models import DTC, MissingDataTrainDTC, MissingDataPredictionDTC
 from sklearn.metrics import roc_auc_score
 
+SKF = StratifiedKFold(n_splits=5, random_state=42, shuffle=True)
 
 def iterate_files():
     """
@@ -56,14 +57,13 @@ def run_complete_model():
     :return:
     """
 
-    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     total_data = iterate_files()
     class_model = DTC()
     scores = []
 
     for name, prepared_data in total_data.items():
         temp_scores = []
-        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+        for train_index, test_index in SKF.split(prepared_data.x, prepared_data.y):
             X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
                               prepared_data.x[~prepared_data.x.index.isin(test_index)]
             y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
@@ -83,14 +83,13 @@ def run_missing_values_in_training_model():
     :return:
     """
 
-    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     class_model = MissingDataTrainDTC()
     total_data = iterate_files()
     scores = []
 
     for name, prepared_data in total_data.items():
         temp_scores = []
-        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+        for train_index, test_index in SKF.split(prepared_data.x, prepared_data.y):
             X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
                               prepared_data.x[~prepared_data.x.index.isin(test_index)]
             y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
@@ -111,14 +110,13 @@ def run_missing_values_in_prediction_model():
     :return:
     """
 
-    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     class_model = MissingDataPredictionDTC()
     total_data = iterate_files()
     scores = []
 
     for name, prepared_data in total_data.items():
         temp_scores = []
-        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+        for train_index, test_index in SKF.split(prepared_data.x, prepared_data.y):
             X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
                               prepared_data.x[~prepared_data.x.index.isin(test_index)]
             y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
