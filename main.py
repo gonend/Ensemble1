@@ -1,6 +1,6 @@
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
-
+import numpy as np
 import read_csv as reader
 from data_preparation import DataPreparation
 from models import DTC, MissingDataTrainDTC, MissingDataPredictionDTC
@@ -37,22 +37,6 @@ def prepare_data(dp):
     dp.partition_data_sets()
 
 
-def apply_grid_search(class_model, prepared_data, special=False):
-    """
-
-    :param class_model:
-    :param prepared_data:
-    :return:
-    """
-    if special:
-        params = {'cls__max_depth': [5], 'cls__min_samples_split': [2]}
-    else:
-        params = {'max_depth': [5], 'min_samples_split': [2]}
-    grid_search_results = GridSearchCV(class_model.model, params, cv=5).fit(prepared_data.x_train,
-                                                                            prepared_data.y_train)
-    return grid_search_results.best_params_
-
-
 def train_model(class_model, x_train, y_train):
     """
     run model's fit function
@@ -68,19 +52,26 @@ def train_model(class_model, x_train, y_train):
 def run_complete_model():
     """
     run decision tree model.
+    apply stratified k fold validation and evaluate the model using AUC ROC metric.
     :return:
     """
 
+    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     total_data = iterate_files()
     class_model = DTC()
     scores = []
 
     for name, prepared_data in total_data.items():
-        best_params = apply_grid_search(class_model, prepared_data)
-        class_model = DTC(best_params['max_depth'], best_params['min_samples_split'])
-        train_model(class_model, prepared_data.x_train, prepared_data.y_train)
-        y_prediction = class_model.predict(prepared_data.x_test)
-        scores.append([name.split('/')[1], evaluate(y_prediction, prepared_data.y_test)])
+        temp_scores = []
+        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+            X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
+                              prepared_data.x[~prepared_data.x.index.isin(test_index)]
+            y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
+                              prepared_data.y[~prepared_data.y.index.isin(test_index)]
+            train_model(class_model, X_train, y_train)
+            y_prediction = class_model.predict(X_test)
+            temp_scores.append(evaluate(y_prediction, y_test))
+        scores.append([name.split('/')[1], np.mean(temp_scores)])
     return scores
 
 
@@ -88,20 +79,27 @@ def run_missing_values_in_training_model():
     """
     run decision tree model wrapped by a pipeline for dealing with missing values during training,
     not in a manner of pre-processing.
+    apply stratified k fold validation and evaluate the model using AUC ROC metric.
     :return:
     """
 
+    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     class_model = MissingDataTrainDTC()
     total_data = iterate_files()
     scores = []
 
     for name, prepared_data in total_data.items():
-        prepared_data.x_train = prepared_data.add_missing_data_10_percent(prepared_data.x_train)
-        best_params = apply_grid_search(class_model, prepared_data, special=True)
-        class_model.model.set_params(**best_params)
-        train_model(class_model, prepared_data.x_train, prepared_data.y_train)
-        y_prediction = class_model.predict(prepared_data.x_test)
-        scores.append([name.split('/')[1], evaluate(y_prediction, prepared_data.y_test)])
+        temp_scores = []
+        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+            X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
+                              prepared_data.x[~prepared_data.x.index.isin(test_index)]
+            y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
+                              prepared_data.y[~prepared_data.y.index.isin(test_index)]
+            X_train = prepared_data.add_missing_data_10_percent(X_train)
+            train_model(class_model, X_train, y_train)
+            y_prediction = class_model.predict(X_test)
+            temp_scores.append(evaluate(y_prediction, y_test))
+        scores.append([name.split('/')[1], np.mean(temp_scores)])
     return scores
 
 
@@ -109,20 +107,27 @@ def run_missing_values_in_prediction_model():
     """
     run decision tree model wrapped by a pipeline for dealing with missing values during prediction,
     not in a manner of pre-processing.
+    apply stratified k fold validation and evaluate the model using AUC ROC metric.
     :return:
     """
 
+    skf = StratifiedKFold(n_splits=5, random_state=None, shuffle=False)
     class_model = MissingDataPredictionDTC()
     total_data = iterate_files()
     scores = []
 
     for name, prepared_data in total_data.items():
-        prepared_data.x_test = prepared_data.add_missing_data_10_percent(prepared_data.x_test)
-        best_params = apply_grid_search(class_model, prepared_data, special=True)
-        class_model.model.set_params(**best_params)
-        train_model(class_model, prepared_data.x_train, prepared_data.y_train)
-        y_prediction = class_model.predict(prepared_data.x_test)
-        scores.append([name.split('/')[1], evaluate(y_prediction, prepared_data.y_test)])
+        temp_scores = []
+        for train_index, test_index in skf.split(prepared_data.x, prepared_data.y):
+            X_train, X_test = prepared_data.x[~prepared_data.x.index.isin(train_index)], \
+                              prepared_data.x[~prepared_data.x.index.isin(test_index)]
+            y_train, y_test = prepared_data.y[~prepared_data.y.index.isin(train_index)], \
+                              prepared_data.y[~prepared_data.y.index.isin(test_index)]
+            X_test = prepared_data.add_missing_data_10_percent(X_test)
+            train_model(class_model, X_train, y_train)
+            y_prediction = class_model.predict(X_test)
+            temp_scores.append(evaluate(y_prediction, y_test))
+        scores.append([name.split('/')[1], np.mean(temp_scores)])
     return scores
 
 
@@ -133,6 +138,7 @@ def evaluate(y_test, y_pred):
     :param y_pred:
     :return:
     """
+
     try:
         return roc_auc_score(y_test, y_pred)
     except ValueError:
@@ -140,6 +146,7 @@ def evaluate(y_test, y_pred):
 
 
 if __name__ == '__main__':
+
     for i in tqdm(range(1)):
         complete_model_scores = run_complete_model()
         print(f'\nComplete model AUROC: {complete_model_scores}\n')
