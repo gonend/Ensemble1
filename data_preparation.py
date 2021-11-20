@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import StratifiedKFold, GridSearchCV, train_test_split
+pd.options.mode.chained_assignment = None
 
 
 class DataPreparation:
@@ -67,8 +67,5 @@ class DataPreparation:
             self.df[col] = self.label_encoder.fit_transform(self.df[col])
 
     def partition_data_sets(self):
-
         self.y = self.df['class']
         self.x = self.df.drop('class', axis=1)
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.x, self.y, test_size=0.33,
-                                                                                random_state=42)

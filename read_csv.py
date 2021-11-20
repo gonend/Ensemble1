@@ -13,7 +13,6 @@ def read_file(file):
     return df
 
 
-
 def read_file_names(path):
     """
     reads all csv files names in a certain directory.
